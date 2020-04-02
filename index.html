@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title> Introduction: Akka gRPC</title>
+
+<link rel="stylesheet" href="css/reveal.css">
+<link rel="stylesheet" href="css/extra.css">
+<link rel="stylesheet" href="css/theme/akka.css">
+
+<!-- Theme used for syntax highlighting of code -->
+<link rel="stylesheet" href="lib/css/zenburn.css">
+
+<!-- Printing and PDF exports -->
+<script>
+var link = document.createElement( 'link' );
+link.rel = 'stylesheet';
+link.type = 'text/css';
+link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+document.getElementsByTagName( 'head' )[0].appendChild( link );
+</script>
+</head>
+<body>
+
+
+<div class="reveal">
+<div class="slides">
+<section data-background-image="./front-bg.svg" data-background-color="#15a8ce">
+<h3><a href="#introduction-akka-grpc" name="introduction-akka-grpc" class="anchor"><span class="anchor-link"></span></a><img src="./akka-reverse.svg" /> Introduction: Akka gRPC</h3>
+<h4><a href="#arnout-engelen" name="arnout-engelen" class="anchor"><span class="anchor-link"></span></a>Arnout Engelen</h4>
+<p><img src="images/lightbend-color-reverse.svg" alt="lightbend-title" /></p></section><section>
+<ol>
+  <li>Introduction</li>
+  <li>Building a server</li>
+</ol>
+<p><a href="https://github.com/raboof/akka-grpc-intro-video">https://github.com/raboof/akka-grpc-intro-video</a></p></section><section>
+<h2><a href="#what-is-grpc-" name="what-is-grpc-" class="anchor"><span class="anchor-link"></span></a>What is gRPC?</h2></section><section>
+<h2><a href="#what-is-grpc-" name="what-is-grpc-" class="anchor"><span class="anchor-link"></span></a>What is gRPC?</h2>
+<h3><a href="#soap" name="soap" class="anchor"><span class="anchor-link"></span></a>SOAP</h3>
+<h3><a href="#rest" name="rest" class="anchor"><span class="anchor-link"></span></a>REST</h3>
+<h3><a href="#grpc" name="grpc" class="anchor"><span class="anchor-link"></span></a>gRPC</h3></section><section>
+<h2><a href="#what-is-grpc-" name="what-is-grpc-" class="anchor"><span class="anchor-link"></span></a>What is gRPC?</h2>
+<h3><a href="#soap-xml" name="soap-xml" class="anchor"><span class="anchor-link"></span></a>SOAP - XML</h3>
+<h3><a href="#rest-json" name="rest-json" class="anchor"><span class="anchor-link"></span></a>REST - JSON</h3>
+<h3><a href="#grpc-protobuf" name="grpc-protobuf" class="anchor"><span class="anchor-link"></span></a>gRPC - Protobuf</h3></section><section>
+<div>
+<img src="images/lightbend-full-color.svg" width=500px>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;      <img src="images/Google_2015_logo.svg">
+</div>
+<p><img src="images/cncf-horizontal-color.png" alt="CNCF" /></p></section><section>
+<h1><a href="#demo" name="demo" class="anchor"><span class="anchor-link"></span></a>Demo</h1>
+<h2><a href="#api" name="api" class="anchor"><span class="anchor-link"></span></a>&lsquo;stock ticker&rsquo; API</h2>
+<p>receiving a stream of stock ticker values for a symbol</p></section><section>
+<p>gRPC is typically used contract-first:</p>
+<pre class="prettyprint"><code class="language-proto">syntax = &quot;proto3&quot;;
+package ticker;
+
+service TickerService {
+  // Monitor a symbol
+  rpc MonitorSymbol (Symbol) returns (stream Value) {}
+}
+
+message Symbol {
+  string name = 1;
+}
+message Value {
+  string name = 1;
+  int32 value = 2;
+}</code></pre></section><section>
+<p>Akka gRPC </p>
+<p>Add the plugin to your build:</p>
+<pre class="prettyprint"><code class="language-sbt">// project/plugins.sbt
+
+addSbtPlugin(&quot;com.lightbend.akka.grpc&quot; % &quot;sbt-akka-grpc&quot; % &quot;0.8.2&quot;)</code></pre>
+<p>And build the project:</p>
+<pre><code>$ sbt compile
+</code></pre>
+<p>To generate API classes:</p>
+<pre><code>$ find target/scala-2.13/src_managed | grep TickerService
+target/scala-2.13/src_managed/main/ticker/TickerServiceHandler.scala
+target/scala-2.13/src_managed/main/ticker/TickerService.scala
+</code></pre></section><section>
+<p>The generated API looks like this:</p>
+<pre class="prettyprint"><code class="language-scala">trait TickerService {
+  
+  /**
+   * Monitor a symbol
+   */
+  def monitorSymbol(in: Symbol): Source[Value, NotUsed]
+  
+}
+</code></pre></section><section>
+<p>We implement it:</p>
+<pre class="prettyprint"><code class="language-scala">class TickerServiceImpl extends TickerService {
+  val random = Random
+
+  override def monitorSymbol(in: Symbol): Source[Value, NotUsed] =
+    Source.fromIterator(() =&gt; new Iterator[Value]() {
+      override def hasNext = true
+      override def next(): Value = Value(in.name, random.nextInt)
+    })
+}</code></pre></section><section>
+<p>And embed it in a simple <a href="https://doc.akka.io/docs/akka-http">Akka HTTP</a> server:</p>
+<pre class="prettyprint"><code class="language-scala">object Main extends App {
+    implicit val system = ActorSystem(&quot;ticker&quot;)
+    implicit val mat = SystemMaterializer(system).materializer
+
+    Http().bindAndHandleAsync(
+        TickerServiceHandler(new TickerServiceImpl),
+        &quot;127.0.0.1&quot;,
+        8080
+    )
+}</code></pre></section><section>
+<p>You can now connect to the service:</p>
+<pre><code>$ grpc_cli call localhost:8080 \
+    ticker.TickerService.MonitorSymbol &quot;name: &#39;foo&#39;&quot; \
+    --proto_path akka-grpc-intro-video/src/main/protobuf \
+    --protofiles ticker.proto
+Received initial metadata from server:
+date : Thu, 02 Apr 2020 11:16:51 GMT
+server : akka-http/10.1.11
+name: &quot;foo&quot;
+value: -1916871094
+
+name: &quot;foo&quot;
+value: -1593780393
+
+name: &quot;foo&quot;
+value: -2089568964
+
+...
+</code></pre></section><section>
+<p>TODO various links to lightbend, academy, docs etc etc</p></section>
+</div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+<script>
+// More info about config & dependencies:
+// - https://github.com/hakimel/reveal.js#configuration
+// - https://github.com/hakimel/reveal.js#dependencies
+Reveal.initialize({
+history: true,
+slideNumber: true,
+dependencies: [
+{ src: 'plugin/markdown/marked.js' },
+{ src: 'plugin/markdown/markdown.js' },
+{ src: 'plugin/notes/notes.js', async: true },
+{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+]
+});
+</script>
+<div class="footer" style="position: absolute; width: 100%; bottom: 0px; padding: 1.2em; background-image: url(lightbend-reverse.svg); height: 3em; background-color: #15a9ce; background-repeat: no-repeat; background-origin: content-box"></div>
+</body>
+</html>
