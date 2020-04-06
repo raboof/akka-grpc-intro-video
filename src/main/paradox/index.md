@@ -152,8 +152,19 @@ $ grpcurl -d '{"name": "foo"}' -plaintext \
 
 @@@
 
-@@@section
+@@@section { data-background-color="#15a8ce" data-background-image="./front-bg.svg" }
 
-TODO various links to lightbend, academy, docs etc etc
+### Links
+
+* [https://github.com/raboof/akka-grpc-intro-video](https://github.com/raboof/akka-grpc-intro-video)
+* [https://doc.akka.io/docs/akka](https://doc.akka.io/docs/akka/current/typed/dispatchers.html#blocking-needs-careful-management)
+* [https://doc.akka.io/docs/akka-grpc](https://doc.akka.io/docs/akka-grpc)
+* [https://www.lightbend.com/videos-and-webinars](https://www.lightbend.com/videos-and-webinars)
+
+![lightbend-title](./images/lightbend-color-reverse.svg)
+
+@notes[
+  That concludes today's video.
+]
 
 @@@
