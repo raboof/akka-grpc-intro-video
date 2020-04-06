@@ -133,22 +133,20 @@ And embed it in a simple [Akka HTTP](https://doc.akka.io/docs/akka-http) server:
 You can now connect to the service:
 
 ```
-$ grpc_cli call localhost:8080 \
-    ticker.TickerService.MonitorSymbol "name: 'foo'" \
-    --proto_path akka-grpc-intro-video/src/main/protobuf \
-    --protofiles ticker.proto
-Received initial metadata from server:
-date : Thu, 02 Apr 2020 11:16:51 GMT
-server : akka-http/10.1.11
-name: "foo"
-value: -1916871094
-
-name: "foo"
-value: -1593780393
-
-name: "foo"
-value: -2089568964
-
+$ grpcurl -d '{"name": "foo"}' -plaintext \
+    -import-path /home/aengelen/dev/akka-grpc-intro-video/src/main/protobuf \
+    -proto ticker.proto \
+    localhost:8080 ticker.TickerService.MonitorSymbol
+{
+  "name": "foo",
+  "value": -1725700895
+}
+{
+  "name": "foo",
+  "value": -341515636
+}
+{
+  "name": "foo",
 ...
 ```
 
