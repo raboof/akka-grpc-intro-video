@@ -113,25 +113,31 @@ target/scala-2.13/src_managed/main/ticker/TickerService.scala
     )
 }</code></pre></section><section>
 <p>You can now connect to the service:</p>
-<pre><code>$ grpc_cli call localhost:8080 \
-    ticker.TickerService.MonitorSymbol &quot;name: &#39;foo&#39;&quot; \
-    --proto_path akka-grpc-intro-video/src/main/protobuf \
-    --protofiles ticker.proto
-Received initial metadata from server:
-date : Thu, 02 Apr 2020 11:16:51 GMT
-server : akka-http/10.1.11
-name: &quot;foo&quot;
-value: -1916871094
-
-name: &quot;foo&quot;
-value: -1593780393
-
-name: &quot;foo&quot;
-value: -2089568964
-
+<pre><code>$ grpcurl -d &#39;{&quot;name&quot;: &quot;foo&quot;}&#39; -plaintext \
+    -import-path /home/aengelen/dev/akka-grpc-intro-video/src/main/protobuf \
+    -proto ticker.proto \
+    localhost:8080 ticker.TickerService.MonitorSymbol
+{
+  &quot;name&quot;: &quot;foo&quot;,
+  &quot;value&quot;: -1725700895
+}
+{
+  &quot;name&quot;: &quot;foo&quot;,
+  &quot;value&quot;: -341515636
+}
+{
+  &quot;name&quot;: &quot;foo&quot;,
 ...
-</code></pre></section><section>
-<p>TODO various links to lightbend, academy, docs etc etc</p></section>
+</code></pre></section><section data-background-image="./front-bg.svg" data-background-color="#15a8ce">
+<h3><a href="#links" name="links" class="anchor"><span class="anchor-link"></span></a>Links</h3>
+<ul>
+  <li><a href="https://github.com/raboof/akka-grpc-intro-video">https://github.com/raboof/akka-grpc-intro-video</a></li>
+  <li><a href="https://doc.akka.io/docs/akka/current/typed/dispatchers.html#blocking-needs-careful-management">https://doc.akka.io/docs/akka</a></li>
+  <li><a href="https://doc.akka.io/docs/akka-grpc">https://doc.akka.io/docs/akka-grpc</a></li>
+  <li><a href="https://www.lightbend.com/videos-and-webinars">https://www.lightbend.com/videos-and-webinars</a></li>
+</ul>
+<p><img src="./images/lightbend-color-reverse.svg" alt="lightbend-title" /></p>
+<p><aside class="notes">  That concludes today&rsquo;s video. </aside></p></section>
 </div>
 </div>
 
