@@ -157,9 +157,10 @@ $ grpcurl -d '{"name": "foo"}' -plaintext \
 ### Links
 
 * [https://github.com/raboof/akka-grpc-intro-video](https://github.com/raboof/akka-grpc-intro-video)
-* [https://doc.akka.io/docs/akka](https://doc.akka.io/docs/akka/current/typed/dispatchers.html#blocking-needs-careful-management)
+* [https://doc.akka.io/docs/akka](https://doc.akka.io/docs/akka)
 * [https://doc.akka.io/docs/akka-grpc](https://doc.akka.io/docs/akka-grpc)
 * [https://www.lightbend.com/videos-and-webinars](https://www.lightbend.com/videos-and-webinars)
+* [https://discuss.akka.io/](https://discuss.akka.io)
 
 ![lightbend-title](./images/lightbend-color-reverse.svg)
 

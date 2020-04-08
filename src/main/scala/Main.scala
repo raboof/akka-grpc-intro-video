@@ -11,7 +11,11 @@ object Main extends App {
     implicit val mat = SystemMaterializer(system).materializer
 
     Http().bindAndHandleAsync(
-        TickerServiceHandler(new TickerServiceImpl),
+//        TickerServiceHandler(new TickerServiceImpl),
+        ServiceHandler.concatOrNotFound(
+            TickerServiceHandler.partial(new TickerServiceImpl),
+            ServerReflection.partial(List(TickerService))
+        ),
         "127.0.0.1",
         8080
     )

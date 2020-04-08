@@ -3,13 +3,15 @@ package ticker;
 
 service TickerService {
   // Monitor a symbol
-  rpc MonitorSymbol (Symbol) returns (stream Value) {}
+  rpc MonitorSymbol (TickerSymbol)
+      returns (stream StockValue)
+  {}
 }
 
-message Symbol {
+message TickerSymbol {
   string name = 1;
 }
-message Value {
+message StockValue {
   string name = 1;
-  int32 value = 2;
+  uint32 value = 2;
 }
