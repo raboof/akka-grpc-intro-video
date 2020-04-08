@@ -58,15 +58,17 @@ package ticker;
 
 service TickerService {
   // Monitor a symbol
-  rpc MonitorSymbol (Symbol) returns (stream Value) {}
+  rpc MonitorSymbol (TickerSymbol)
+      returns (stream StockValue)
+  {}
 }
 
-message Symbol {
+message TickerSymbol {
   string name = 1;
 }
-message Value {
+message StockValue {
   string name = 1;
-  int32 value = 2;
+  uint32 value = 2;
 }</code></pre></section><section>
 <p>Akka gRPC </p>
 <p>Add the plugin to your build:</p>
@@ -95,10 +97,10 @@ target/scala-2.13/src_managed/main/ticker/TickerService.scala
 <pre class="prettyprint"><code class="language-scala">class TickerServiceImpl extends TickerService {
   val random = Random
 
-  override def monitorSymbol(in: Symbol): Source[Value, NotUsed] =
-    Source.fromIterator(() =&gt; new Iterator[Value]() {
+  override def monitorSymbol(in: TickerSymbol): Source[StockValue, NotUsed] =
+    Source.fromIterator(() =&gt; new Iterator[StockValue]() {
       override def hasNext = true
-      override def next(): Value = Value(in.name, random.nextInt)
+      override def next(): StockValue = StockValue(in.name, random.nextInt(500))
     })
 }</code></pre></section><section>
 <p>And embed it in a simple <a href="https://doc.akka.io/docs/akka-http">Akka HTTP</a> server:</p>
@@ -107,7 +109,11 @@ target/scala-2.13/src_managed/main/ticker/TickerService.scala
     implicit val mat = SystemMaterializer(system).materializer
 
     Http().bindAndHandleAsync(
-        TickerServiceHandler(new TickerServiceImpl),
+//        TickerServiceHandler(new TickerServiceImpl),
+        ServiceHandler.concatOrNotFound(
+            TickerServiceHandler.partial(new TickerServiceImpl),
+            ServerReflection.partial(List(TickerService))
+        ),
         &quot;127.0.0.1&quot;,
         8080
     )
@@ -132,9 +138,10 @@ target/scala-2.13/src_managed/main/ticker/TickerService.scala
 <h3><a href="#links" name="links" class="anchor"><span class="anchor-link"></span></a>Links</h3>
 <ul>
   <li><a href="https://github.com/raboof/akka-grpc-intro-video">https://github.com/raboof/akka-grpc-intro-video</a></li>
-  <li><a href="https://doc.akka.io/docs/akka/current/typed/dispatchers.html#blocking-needs-careful-management">https://doc.akka.io/docs/akka</a></li>
+  <li><a href="https://doc.akka.io/docs/akka">https://doc.akka.io/docs/akka</a></li>
   <li><a href="https://doc.akka.io/docs/akka-grpc">https://doc.akka.io/docs/akka-grpc</a></li>
   <li><a href="https://www.lightbend.com/videos-and-webinars">https://www.lightbend.com/videos-and-webinars</a></li>
+  <li><a href="https://discuss.akka.io">https://discuss.akka.io/</a></li>
 </ul>
 <p><img src="./images/lightbend-color-reverse.svg" alt="lightbend-title" /></p>
 <p><aside class="notes">  That concludes today&rsquo;s video. </aside></p></section>
