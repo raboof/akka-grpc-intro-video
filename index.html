@@ -74,7 +74,7 @@ message StockValue {
 <p>Add the plugin to your build:</p>
 <pre class="prettyprint"><code class="language-sbt">// project/plugins.sbt
 
-addSbtPlugin(&quot;com.lightbend.akka.grpc&quot; % &quot;sbt-akka-grpc&quot; % &quot;0.8.2&quot;)</code></pre>
+addSbtPlugin(&quot;com.lightbend.akka.grpc&quot; % &quot;sbt-akka-grpc&quot; % &quot;1.0.0&quot;)</code></pre>
 <p>And build the project:</p>
 <pre><code>$ sbt compile
 </code></pre>
@@ -106,14 +106,9 @@ target/scala-2.13/src_managed/main/ticker/TickerService.scala
 <p>And embed it in a simple <a href="https://doc.akka.io/docs/akka-http">Akka HTTP</a> server:</p>
 <pre class="prettyprint"><code class="language-scala">object Main extends App {
     implicit val system = ActorSystem(&quot;ticker&quot;)
-    implicit val mat = SystemMaterializer(system).materializer
 
     Http().bindAndHandleAsync(
-//        TickerServiceHandler(new TickerServiceImpl),
-        ServiceHandler.concatOrNotFound(
-            TickerServiceHandler.partial(new TickerServiceImpl),
-            ServerReflection.partial(List(TickerService))
-        ),
+       TickerServiceHandler(new TickerServiceImpl),
         &quot;127.0.0.1&quot;,
         8080
     )
