@@ -8,19 +8,17 @@ import akka.stream.SystemMaterializer
 //#main
 object Main extends App {
     implicit val system = ActorSystem("ticker")
-    implicit val mat = SystemMaterializer(system).materializer
 
     Http().bindAndHandleAsync(
-//        TickerServiceHandler(new TickerServiceImpl),
-        ServiceHandler.concatOrNotFound(
-            TickerServiceHandler.partial(new TickerServiceImpl),
-            ServerReflection.partial(List(TickerService))
-        ),
+       TickerServiceHandler(new TickerServiceImpl),
         "127.0.0.1",
         8080
     )
 }
 //#main
+
+// To enable server reflection, use a composite handler like this:
+//
 //        ServiceHandler.concatOrNotFound(
 //            TickerServiceHandler.partial(new TickerServiceImpl),
 //            ServerReflection.partial(List(TickerService))
